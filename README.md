@@ -22,7 +22,10 @@ tsconfig.json
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "lib": ["es2019", "esnext.asynciterable"],
+    "lib": [
+      "es2019",
+      "esnext.asynciterable"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -34,7 +37,9 @@ tsconfig.json
     "strictNullChecks": true,
     "target": "es2019"
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ]
 }
 ```
 
@@ -99,7 +104,9 @@ nodemon.json
 
 ```json
 {
-  "watch": ["src"],
+  "watch": [
+    "src"
+  ],
   "ext": "js,json,ts",
   "exec": "ts-node --transpile-only -r ./src/application.ts"
 }
@@ -111,7 +118,7 @@ nodemon.json
 
 ```typescript
 import Stripe from "stripe";
-import { findUserForId, updateUser } from "./database";
+import {findUserForId, updateUser} from "./database";
 
 const STRIPE_SECRET_KEY = "TODO";
 const STRIPE_SUBSCRIPTION_PRICE_ID = "TODO";
@@ -184,47 +191,60 @@ export const createBillingPortalSession = async (userId: string) => {
 ```
 
 ```typescript
-post("/webhooks/stripe", async (ctx) => {
-    const event = stripe.webhooks.constructEvent(
-        ctx.request.rawBody,
-        ctx.request.headers["stripe-signature"],
-        "STRIPE_SIGNING_SECRET" // TODO
-    );
+router
+    .get("/checkout-session", async (ctx) => {
+        const checkoutSession = await createCheckoutSession("user-id");
+        ctx.body = checkoutSession.id;
+    })
+    .get("/billing-portal", async (ctx) => {
+        const billingPortalSession = await createBillingPortalSession("user-id");
+        ctx.redirect(billingPortalSession.url);
+    })
+```
 
-    console.log(`Event type: ${event.type}`);
+```typescript
+router
+    .post("/webhooks/stripe", async (ctx) => {
+        const event = stripe.webhooks.constructEvent(
+            ctx.request.rawBody,
+            ctx.request.headers["stripe-signature"],
+            "STRIPE_SIGNING_SECRET" // TODO
+        );
 
-    if (event.type === "checkout.session.completed") {
-        console.log("Stripe: checkout session completed");
-        const session = event.data.object as Stripe.Checkout.Session;
-        const customerId = session.customer;
-        if (!customerId) {
-            throw new Error(`Missing customer ${customerId}`);
-        }
-        const user = await findUserForStripeCustomerId(customerId as string);
-        if (!user) {
-            throw new Error("Missing user");
-        }
-        await updateUser(user.id, {
-            subscribedAt: new Date(),
-        });
-    }
+        console.log(`Event type: ${event.type}`);
 
-    if (event.type === "customer.subscription.deleted") {
-        console.log("Stripe: customer subscription deleted");
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer;
-        if (!customerId) {
-            throw new Error(`Missing customer ${customerId}`);
+        if (event.type === "checkout.session.completed") {
+            console.log("Stripe: checkout session completed");
+            const session = event.data.object as Stripe.Checkout.Session;
+            const customerId = session.customer;
+            if (!customerId) {
+                throw new Error(`Missing customer ${customerId}`);
+            }
+            const user = await findUserForStripeCustomerId(customerId as string);
+            if (!user) {
+                throw new Error("Missing user");
+            }
+            await updateUser(user.id, {
+                subscribedAt: new Date(),
+            });
         }
-        const user = await findUserForStripeCustomerId(customerId as string);
-        if (!user) {
-            throw new Error("Missing user");
-        }
-        await updateUser(user.id, {
-            unsubscribedAt: new Date(),
-        });
-    }
 
-    ctx.status = 200;
-})
+        if (event.type === "customer.subscription.deleted") {
+            console.log("Stripe: customer subscription deleted");
+            const subscription = event.data.object as Stripe.Subscription;
+            const customerId = subscription.customer;
+            if (!customerId) {
+                throw new Error(`Missing customer ${customerId}`);
+            }
+            const user = await findUserForStripeCustomerId(customerId as string);
+            if (!user) {
+                throw new Error("Missing user");
+            }
+            await updateUser(user.id, {
+                unsubscribedAt: new Date(),
+            });
+        }
+
+        ctx.status = 200;
+    })
 ```
