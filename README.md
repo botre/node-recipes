@@ -116,6 +116,10 @@ nodemon.json
 
 ### Subscription boilerplate
 
+```bash
+npm install stripe
+```
+
 ```typescript
 import Stripe from "stripe";
 import {findUserForId, updateUser} from "./database";
