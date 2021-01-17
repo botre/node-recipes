@@ -111,75 +111,75 @@ nodemon.json
 
 ```typescript
 import Stripe from "stripe";
-import { findUser, updateUser } from "./database";
+import { findUserForId, updateUser } from "./database";
 
 const STRIPE_SECRET_KEY = "TODO";
 const STRIPE_SUBSCRIPTION_PRICE_ID = "TODO";
 const STRIPE_WEBSITE_URL = "TODO";
 
 export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: "2020-08-27",
+    apiVersion: "2020-08-27",
 });
 
 export const createCustomer = async (userId: string) => {
-  const user = await findUser(userId);
-  if (user) {
-    if (user.stripeCustomerId) {
-      return user.stripeCustomerId;
-    } else {
-      const customer = await stripe.customers.create({
-        email: user.email,
-      });
-      await updateUser(user.id, {
-        stripeCustomerId: customer.id,
-      });
-      return customer.id;
+    const user = await findUserForId(userId);
+    if (user) {
+        if (user.stripeCustomerId) {
+            return user.stripeCustomerId;
+        } else {
+            const customer = await stripe.customers.create({
+                email: user.email,
+            });
+            await updateUser(user.id, {
+                stripeCustomerId: customer.id,
+            });
+            return customer.id;
+        }
     }
-  }
-  return null;
+    return null;
 };
 
 export const createCheckoutSession = async (userId: string) => {
-  const user = await findUser(userId);
-  if (!user) {
-    throw new Error("Missing user");
-  }
-  let customerId = user.stripeCustomerId;
-  if (!customerId) {
-    customerId = await createCustomer(userId);
-  }
-  if (!customerId) {
-    throw new Error("Error creating Stripe Customer");
-  }
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: STRIPE_SUBSCRIPTION_PRICE_ID,
-        quantity: 1,
-      },
-    ],
-    success_url: STRIPE_WEBSITE_URL,
-    cancel_url: STRIPE_WEBSITE_URL,
-  });
-  return session;
+    const user = await findUserForId(userId);
+    if (!user) {
+        throw new Error("Missing user");
+    }
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+        customerId = await createCustomer(userId);
+    }
+    if (!customerId) {
+        throw new Error("Error creating Stripe Customer");
+    }
+    const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+            {
+                price: STRIPE_SUBSCRIPTION_PRICE_ID,
+                quantity: 1,
+            },
+        ],
+        success_url: STRIPE_WEBSITE_URL,
+        cancel_url: STRIPE_WEBSITE_URL,
+    });
+    return session;
 };
 
 export const createBillingPortalSession = async (userId: string) => {
-  const user = await findUser(userId);
-  if (!user) {
-    throw new Error("Missing user");
-  }
-  if (!user.stripeCustomerId) {
-    throw new Error("Missing Stripe Customer");
-  }
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripeCustomerId,
-    return_url: STRIPE_WEBSITE_URL,
-  });
-  return session;
+    const user = await findUserForId(userId);
+    if (!user) {
+        throw new Error("Missing user");
+    }
+    if (!user.stripeCustomerId) {
+        throw new Error("Missing Stripe Customer");
+    }
+    const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: STRIPE_WEBSITE_URL,
+    });
+    return session;
 };
 ```
 
