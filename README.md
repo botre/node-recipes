@@ -104,3 +104,127 @@ nodemon.json
   "exec": "ts-node --transpile-only -r ./src/application.ts"
 }
 ```
+
+## Stripe
+
+### Subscription boilerplate
+
+```typescript
+import Stripe from "stripe";
+import { findUser, updateUser } from "./database";
+
+const STRIPE_SECRET_KEY = "TODO";
+const STRIPE_SUBSCRIPTION_PRICE_ID = "TODO";
+const STRIPE_WEBSITE_URL = "TODO";
+
+export const stripe = new Stripe(STRIPE_SECRET_KEY, {
+  apiVersion: "2020-08-27",
+});
+
+export const createCustomer = async (userId: string) => {
+  const user = await findUser(userId);
+  if (user) {
+    if (user.stripeCustomerId) {
+      return user.stripeCustomerId;
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+      });
+      await updateUser(user.id, {
+        stripeCustomerId: customer.id,
+      });
+      return customer.id;
+    }
+  }
+  return null;
+};
+
+export const createCheckoutSession = async (userId: string) => {
+  const user = await findUser(userId);
+  if (!user) {
+    throw new Error("Missing user");
+  }
+  let customerId = user.stripeCustomerId;
+  if (!customerId) {
+    customerId = await createCustomer(userId);
+  }
+  if (!customerId) {
+    throw new Error("Error creating Stripe Customer");
+  }
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: STRIPE_SUBSCRIPTION_PRICE_ID,
+        quantity: 1,
+      },
+    ],
+    success_url: STRIPE_WEBSITE_URL,
+    cancel_url: STRIPE_WEBSITE_URL,
+  });
+  return session;
+};
+
+export const createBillingPortalSession = async (userId: string) => {
+  const user = await findUser(userId);
+  if (!user) {
+    throw new Error("Missing user");
+  }
+  if (!user.stripeCustomerId) {
+    throw new Error("Missing Stripe Customer");
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: user.stripeCustomerId,
+    return_url: STRIPE_WEBSITE_URL,
+  });
+  return session;
+};
+```
+
+```typescript
+post("/webhooks/stripe", async (ctx) => {
+  const event = stripe.webhooks.constructEvent(
+    ctx.request.rawBody,
+    ctx.request.headers["stripe-signature"],
+    env.STRIPE_SIGNING_SECRET
+  );
+
+  console.log(`Event type: ${event.type}`);
+
+  if (event.type === "checkout.session.completed") {
+    console.log("Stripe: checkout session completed");
+    const session = event.data.object as Stripe.Checkout.Session;
+    const customerId = session.customer;
+    if (!customerId) {
+      throw new Error(`Missing customer ${customerId}`);
+    }
+    const user = await getUserForStripeCustomerId(customerId as string);
+    if (!user) {
+      throw new Error("Missing user");
+    }
+    await updateUser(user.id, {
+      upgradedAt: new Date(),
+    });
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    console.log("Stripe: customer subscription deleted");
+    const subscription = event.data.object as Stripe.Subscription;
+    const customerId = subscription.customer;
+    if (!customerId) {
+      throw new Error(`Missing customer ${customerId}`);
+    }
+    const user = await getUserForStripeCustomerId(customerId as string);
+    if (!user) {
+      throw new Error("Missing user");
+    }
+    await updateUser(user.id, {
+      downgradedAt: new Date(),
+    });
+  }
+
+  ctx.status = StatusCodes.OK;
+})
+```
