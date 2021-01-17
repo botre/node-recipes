@@ -185,46 +185,46 @@ export const createBillingPortalSession = async (userId: string) => {
 
 ```typescript
 post("/webhooks/stripe", async (ctx) => {
-  const event = stripe.webhooks.constructEvent(
-    ctx.request.rawBody,
-    ctx.request.headers["stripe-signature"],
-    env.STRIPE_SIGNING_SECRET
-  );
+    const event = stripe.webhooks.constructEvent(
+        ctx.request.rawBody,
+        ctx.request.headers["stripe-signature"],
+        "STRIPE_SIGNING_SECRET" // TODO
+    );
 
-  console.log(`Event type: ${event.type}`);
+    console.log(`Event type: ${event.type}`);
 
-  if (event.type === "checkout.session.completed") {
-    console.log("Stripe: checkout session completed");
-    const session = event.data.object as Stripe.Checkout.Session;
-    const customerId = session.customer;
-    if (!customerId) {
-      throw new Error(`Missing customer ${customerId}`);
+    if (event.type === "checkout.session.completed") {
+        console.log("Stripe: checkout session completed");
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer;
+        if (!customerId) {
+            throw new Error(`Missing customer ${customerId}`);
+        }
+        const user = await findUserForStripeCustomerId(customerId as string);
+        if (!user) {
+            throw new Error("Missing user");
+        }
+        await updateUser(user.id, {
+            subscribedAt: new Date(),
+        });
     }
-    const user = await getUserForStripeCustomerId(customerId as string);
-    if (!user) {
-      throw new Error("Missing user");
-    }
-    await updateUser(user.id, {
-      upgradedAt: new Date(),
-    });
-  }
 
-  if (event.type === "customer.subscription.deleted") {
-    console.log("Stripe: customer subscription deleted");
-    const subscription = event.data.object as Stripe.Subscription;
-    const customerId = subscription.customer;
-    if (!customerId) {
-      throw new Error(`Missing customer ${customerId}`);
+    if (event.type === "customer.subscription.deleted") {
+        console.log("Stripe: customer subscription deleted");
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer;
+        if (!customerId) {
+            throw new Error(`Missing customer ${customerId}`);
+        }
+        const user = await findUserForStripeCustomerId(customerId as string);
+        if (!user) {
+            throw new Error("Missing user");
+        }
+        await updateUser(user.id, {
+            unsubscribedAt: new Date(),
+        });
     }
-    const user = await getUserForStripeCustomerId(customerId as string);
-    if (!user) {
-      throw new Error("Missing user");
-    }
-    await updateUser(user.id, {
-      downgradedAt: new Date(),
-    });
-  }
 
-  ctx.status = StatusCodes.OK;
+    ctx.status = 200;
 })
 ```
