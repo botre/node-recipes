@@ -112,6 +112,43 @@ nodemon.json
 }
 ```
 
+## Securing .env files
+
+```bash
+npm install --save-dev decrypt
+```
+
+Add the following to your .bashrc
+
+```bash
+export DOTENV_SECRET=your-secret
+```
+
+encrypt.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+node_modules/.bin/senv encrypt .env.development -p "$DOTENV_SECRET" > .env.development.encrypted
+node_modules/.bin/senv encrypt .env.production -p "$DOTENV_SECRET" > .env.production.encrypted
+node_modules/.bin/senv encrypt .env.test -p "$DOTENV_SECRET" > .env.test.encrypted
+```
+
+decrypt.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+node_modules/.bin/senv decrypt .env.development.encrypted -p "$DOTENV_SECRET" > .env.development
+node_modules/.bin/senv decrypt .env.production.encrypted -p "$DOTENV_SECRET" > .env.production
+node_modules/.bin/senv decrypt .env.test.encrypted -p "$DOTENV_SECRET" > .env.test
+```
+
+
 ## Stripe
 
 ### Subscription boilerplate
