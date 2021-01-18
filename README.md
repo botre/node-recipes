@@ -3,6 +3,7 @@
 ## Directories
 
 ```bash
+mkdir scripts
 mkdir src
 ```
 
