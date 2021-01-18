@@ -125,6 +125,16 @@ nodemon.json
 }
 ```
 
+## .env
+
+```bash
+npm install dotenv
+```
+
+```bash
+require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+```
+
 ## Securing .env files
 
 ```bash
