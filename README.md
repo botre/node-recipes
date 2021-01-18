@@ -115,7 +115,7 @@ nodemon.json
 ## Securing .env files
 
 ```bash
-npm install --save-dev decrypt
+npm install --save-dev senv
 ```
 
 Add the following to your .bashrc
