@@ -101,6 +101,18 @@ application.use(router.routes()).use(router.allowedMethods());
 npm install --save-dev nodemon ts-node
 ```
 
+dev.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+export NODE_ENV="development"
+
+node_modules/.bin/nodemon
+```
+
 nodemon.json
 
 ```json
