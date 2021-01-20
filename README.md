@@ -93,6 +93,28 @@ router.get("/", (ctx) => (ctx.body = "🌊"));
 application.use(router.routes()).use(router.allowedMethods());
 ```
 
+### Wrapping a Koa application for Lambda
+
+```bash
+npm install --save-dev aws-lambda serverless-http
+```
+
+```typescript
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import serverless from "serverless-http";
+import createApplication from "./application";
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+) => {
+  const application = await createApplication();
+  const handler = serverless(application);
+  const result = await handler(event, context);
+  return result;
+};
+```
+
 ## Nodemon
 
 ### Setup
