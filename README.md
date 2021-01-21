@@ -100,19 +100,45 @@ npm install --save-dev aws-lambda serverless-http
 ```
 
 ```typescript
-import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import {APIGatewayProxyEvent, Context} from "aws-lambda";
 import serverless from "serverless-http";
 import createApplication from "./application";
 
 export const handler = async (
-  event: APIGatewayProxyEvent,
-  context: Context
+    event: APIGatewayProxyEvent,
+    context: Context
 ) => {
-  const application = await createApplication();
-  const handler = serverless(application);
-  const result = await handler(event, context);
-  return result;
+    const application = await createApplication();
+    const handler = serverless(application);
+    const result = await handler(event, context);
+    return result;
 };
+```
+
+## Prettier
+
+### Format all
+
+```bash
+prettier --write . --ignore-path .gitignore
+```
+
+### Quick setup
+
+```bash
+npm install --save-dev husky prettier pretty-quick
+```
+
+package.json
+
+```json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  }
+}
 ```
 
 ## Nodemon
@@ -192,7 +218,6 @@ node_modules/.bin/senv decrypt .env.development.encrypted -p "$DOTENV_SECRET" > 
 node_modules/.bin/senv decrypt .env.production.encrypted -p "$DOTENV_SECRET" > .env.production
 node_modules/.bin/senv decrypt .env.test.encrypted -p "$DOTENV_SECRET" > .env.test
 ```
-
 
 ## Stripe
 
