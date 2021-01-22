@@ -219,6 +219,42 @@ node_modules/.bin/senv decrypt .env.production.encrypted -p "$DOTENV_SECRET" > .
 node_modules/.bin/senv decrypt .env.test.encrypted -p "$DOTENV_SECRET" > .env.test
 ```
 
+## Database
+
+### Setup
+
+.env
+
+```
+DB_DATABASE=postgres
+DB_HOST=localhost
+DB_PASSWORD=postgres
+DB_PORT=5432
+DB_TYPE=postgres
+```
+
+docker-compose.yml
+
+```yaml
+version: "3"
+services:
+  postgres:
+    image: "postgres"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+```
+
+dev.sh
+
+```bash
+docker-compose down
+docker-compose up -d
+```
+
 ## Stripe
 
 ### Subscription boilerplate
