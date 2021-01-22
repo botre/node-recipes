@@ -44,6 +44,16 @@ tsconfig.json
 }
 ```
 
+typecheck.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+node_modules/.bin/tsc --noEmit -p tsconfig.json
+```
+
 ## Koa
 
 ### Setup
