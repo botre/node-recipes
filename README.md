@@ -307,6 +307,7 @@ import {
     getManager,
 } from "typeorm";
 import {SnakeNamingStrategy} from "typeorm-naming-strategies";
+import entities from "../entities";
 
 let _connection;
 
@@ -314,16 +315,16 @@ export const createDatabaseConnection = async () => {
     try {
         const connection = await createConnection({
             database: process.env.DB_DATABASE,
-            entities: entities,
+            entities,
             host: process.env.DB_HOST,
             migrations: ["../migrations/*.ts"],
             namingStrategy: new SnakeNamingStrategy(),
             password: process.env.DB_PASSWORD,
-            port: process.env.DB_PORT,
-            type: process.env.DB_TYPE,
+            port: parseInt(process.env.DB_PORT!),
+            type: process.env.DB_TYPE as any,
             username: process.env.DB_USERNAME,
         });
-        if (env.DB_SYNCHRONIZE) {
+        if (process.env.DB_SYNCHRONIZE) {
             await connection.synchronize(false);
         }
         _connection = connection;
@@ -342,7 +343,7 @@ export const closeDatabaseConnection = async () => {
 };
 
 export const flushDatabase = async () => {
-    if (env.NODE_ENV !== "test") {
+    if (process.env.NODE_ENV !== "test") {
         throw new Error("Illegal NODE_ENV");
     }
     const entityNames = getConnection()
