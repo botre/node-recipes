@@ -255,6 +255,116 @@ docker-compose down
 docker-compose up -d
 ```
 
+## TypeORM
+
+### Setup
+
+```bash
+npm install pg typeorm typeorm-naming-strategies
+```
+
+ormconfig.ts
+
+```typescript
+require("dotenv").config({path: `.env.${process.env.NODE_ENV}`});
+
+import {SnakeNamingStrategy} from "typeorm-naming-strategies";
+import entities from "./src/entities";
+
+export = {
+    cli: {
+        migrationsDir: "./src/migrations",
+    },
+    database: env.DB_DATABASE,
+    entities: entities,
+    host: env.DB_HOST,
+    migrations: ["./src/migrations/*.ts"],
+    namingStrategy: new SnakeNamingStrategy(),
+    password: env.DB_PASSWORD,
+    port: env.DB_PORT,
+    type: env.DB_TYPE,
+    username: env.DB_USERNAME,
+};
+```
+
+database.ts
+
+```typescript
+import {
+    createConnection,
+    getConnection,
+    getConnectionManager,
+    getManager,
+} from "typeorm";
+import {SnakeNamingStrategy} from "typeorm-naming-strategies";
+
+let _connection;
+
+export const createDatabaseConnection = async () => {
+    try {
+        const connection = await createConnection({
+            database: process.env.DB_DATABASE,
+            entities: entities,
+            host: process.env.DB_HOST,
+            migrations: ["../migrations/*.ts"],
+            namingStrategy: new SnakeNamingStrategy(),
+            password: process.env.DB_PASSWORD,
+            port: process.env.DB_PORT,
+            type: process.env.DB_TYPE,
+            username: process.env.DB_USERNAME,
+        });
+        if (env.DB_SYNCHRONIZE) {
+            await connection.synchronize(false);
+        }
+        _connection = connection;
+    } catch (e) {
+        if (e.name === "AlreadyHasActiveConnectionError") {
+            const existingConnection = getConnectionManager().get("default");
+            _connection = existingConnection;
+        } else {
+            throw e;
+        }
+    }
+};
+
+export const closeDatabaseConnection = async () => {
+    await getConnection().close();
+};
+
+export const flushDatabase = async () => {
+    if (env.NODE_ENV !== "test") {
+        throw new Error("Illegal NODE_ENV");
+    }
+    const entityNames = getConnection()
+        .entityMetadatas.map(({tableName}) => tableName)
+        .filter((tableName) => tableName !== "migrations");
+    await getManager().query(
+        `TRUNCATE TABLE ${entityNames
+            .map((name) => `"${name}"`)
+            .join(", ")} CASCADE;`
+    );
+};
+```
+
+generate-migration.sh
+
+```bash
+set -e
+
+echo You are about to generate a migration from schema changes
+echo Pick a name:
+read -r NAME
+NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:generate -n "$NAME"
+```
+
+run-migration.sh
+
+```bash
+set -e
+
+NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:run
+```
+
 ## Stripe
 
 ### Subscription boilerplate
