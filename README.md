@@ -516,3 +516,82 @@ router
         ctx.status = 200;
     })
 ```
+
+## NPM browser library (Webpack)
+
+```bash
+npm install --save-dev ts-loader tslib typescript webpack webpack-cli
+```
+
+tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "lib": [
+      "dom",
+      "ES2015"
+    ],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "rootDir": "src",
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES5"
+  },
+  "include": [
+    "src"
+  ]
+}
+```
+
+webpack.config.js
+
+```javascript
+module.exports = {
+    devtool: "inline-source-map",
+    output: {
+        filename: "index.js",
+        library: "LibraryName",
+        libraryTarget: "umd",
+        libraryExport: "default",
+        umdNamedDefine: true,
+        globalObject: "typeof self !== 'undefined' ? self : this",
+    },
+    resolve: {
+        extensions: [".ts", ".js"],
+    },
+    module: {
+        rules: [{test: /\.ts?$/, loader: "ts-loader", exclude: /node_modules/}],
+    },
+};
+```
+
+package.json
+
+```json
+{
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "webpack --mode production --progress"
+  }
+}
+```
