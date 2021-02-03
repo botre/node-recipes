@@ -517,6 +517,38 @@ router
     })
 ```
 
+## Jest
+
+```bash
+npm install --save-dev @types/jest jest ts-jest
+```
+
+jest.config.js
+
+```javascript
+module.exports = {
+  globals: {
+    "ts-jest": {
+      isolatedModules: true,
+    },
+  },
+  preset: "ts-jest",
+  verbose: true,
+};
+```
+
+tsconfig.json
+
+```json
+{
+  "include": ["src/**/*", "__tests__/**/*"]
+}
+```
+
+```bash
+mkdir __tests__
+```
+
 ## NPM browser library (Webpack)
 
 ```bash
