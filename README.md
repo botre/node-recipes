@@ -322,8 +322,6 @@ export = {
 
 ### database.ts
 
-#### PostgreSQL
-
 ```typescript
 import {
   createConnection,
