@@ -77,7 +77,12 @@ application.use(logger());
 
 application.use(cors());
 
-application.use(helmet());
+application.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production" ? undefined : false,
+  })
+);
 
 application.use(bodyParser());
 
