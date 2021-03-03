@@ -407,6 +407,45 @@ set -e
 NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:run
 ```
 
+## GraphQL
+
+```bash
+npm install graphql graphql-type-json
+```
+
+### Apollo with Koa
+
+```bash
+npm install apollo-server apollo-server-koa
+```
+
+### TypeGraphQL
+
+```bash
+npm install type-graphql
+```
+
+### Depth limit
+
+```bash
+npm install graphql-depth-limit
+```
+
+```bash
+npm install --save-dev @types/graphql-depth-limit
+```
+
+```typescript
+import { ApolloServer } from "apollo-server-koa";
+import depthLimit from "graphql-depth-limit";
+
+const DepthLimitRule = depthLimit(6);
+
+const server = new ApolloServer({
+  validationRules: [DepthLimitRule],
+});
+```
+
 ## Stripe
 
 ### Subscription boilerplate
