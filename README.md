@@ -283,7 +283,7 @@ npm install typeorm-naming-strategies
 #### SQLite
 
 ```bash
-npm install sqlite
+npm install sqlite3
 ```
 
 ### ormconfig.ts
