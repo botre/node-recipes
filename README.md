@@ -98,6 +98,14 @@ router.get("/", (ctx) => (ctx.body = "🌊"));
 application.use(router.routes()).use(router.allowedMethods());
 ```
 
+```typescript
+const port = 3000;
+
+application.listen(port, () => {
+  console.log(`Application listening at http://localhost:${port}`);
+});
+```
+
 ### Wrapping a Koa application for Lambda
 
 ```bash
