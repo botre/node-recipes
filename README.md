@@ -419,10 +419,46 @@ npm install graphql graphql-type-json
 npm install apollo-server apollo-server-koa
 ```
 
+```typescript
+import { ApolloServer } from "apollo-server-koa";
+
+const apolloServer = new ApolloServer({
+  typeDefs: [],
+  resolvers: [],
+});
+
+apolloServer.applyMiddleware({ app: application, path: "/graphql" });
+```
+
 ### TypeGraphQL
 
 ```bash
 npm install type-graphql
+```
+
+```typescript
+import { buildTypeDefsAndResolvers, registerEnumType } from "type-graphql";
+import enums from "../gql/enums";
+import resolvers from "../gql/resolvers";
+
+async function buildTypeDefsAndResolvers() {
+  enums.forEach(({ clazz, meta }) => {
+    registerEnumType(clazz, meta);
+  });
+  const result = await buildTypeDefsAndResolvers({
+    resolvers,
+  });
+  return result;
+}
+```
+
+resolvers.ts
+
+```typescript
+import { NonEmptyArray } from "type-graphql";
+import { SomeResolver } from "./resolvers/SomeResolver";
+
+export default [SomeResolver] as NonEmptyArray<Function>;
 ```
 
 ### Depth limit
@@ -441,7 +477,7 @@ import depthLimit from "graphql-depth-limit";
 
 const DepthLimitRule = depthLimit(6);
 
-const server = new ApolloServer({
+const apolloServer = new ApolloServer({
   validationRules: [DepthLimitRule],
 });
 ```
