@@ -23,10 +23,7 @@ tsconfig.json
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "lib": [
-      "es2019",
-      "esnext.asynciterable"
-    ],
+    "lib": ["es2019", "esnext.asynciterable"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -38,9 +35,7 @@ tsconfig.json
     "strictNullChecks": true,
     "target": "es2019"
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
 ```
 
@@ -87,13 +82,13 @@ application.use(helmet());
 application.use(bodyParser());
 
 application.use(async (ctx, next) => {
-    try {
-        await next();
-    } catch (error) {
-        console.error(error);
-        ctx.status = error.status || 500;
-        ctx.body = error.message;
-    }
+  try {
+    await next();
+  } catch (error) {
+    console.error(error);
+    ctx.status = error.status || 500;
+    ctx.body = error.message;
+  }
 });
 
 const router = new Router();
@@ -110,18 +105,18 @@ npm install --save-dev aws-lambda serverless-http
 ```
 
 ```typescript
-import {APIGatewayProxyEvent, Context} from "aws-lambda";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import serverless from "serverless-http";
 import createApplication from "./application";
 
 export const handler = async (
-    event: APIGatewayProxyEvent,
-    context: Context
+  event: APIGatewayProxyEvent,
+  context: Context
 ) => {
-    const application = await createApplication();
-    const handler = serverless(application);
-    const result = await handler(event, context);
-    return result;
+  const application = await createApplication();
+  const handler = serverless(application);
+  const result = await handler(event, context);
+  return result;
 };
 ```
 
@@ -175,9 +170,7 @@ nodemon.json
 
 ```json
 {
-  "watch": [
-    "src"
-  ],
+  "watch": ["src"],
   "ext": "js,json,ts",
   "exec": "ts-node --transpile-only -r ./src/application.ts"
 }
@@ -267,97 +260,129 @@ docker-compose up -d
 
 ## TypeORM
 
-### Setup
+### Dependencies
 
 ```bash
-npm install pg typeorm typeorm-naming-strategies
+npm install typeorm
 ```
 
-ormconfig.ts
+#### PostgreSQL
+
+```bash
+npm install typeorm-naming-strategies
+```
+
+#### SQLite
+
+```bash
+npm install sqlite
+```
+
+### ormconfig.ts
+
+#### PostgreSQL
 
 ```typescript
-require("dotenv").config({path: `.env.${process.env.NODE_ENV}`});
+require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 
-import {SnakeNamingStrategy} from "typeorm-naming-strategies";
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import entities from "./src/entities";
 
 export = {
-    cli: {
-        migrationsDir: "./src/migrations",
-    },
-    database: env.DB_DATABASE,
-    entities: entities,
-    host: env.DB_HOST,
-    migrations: ["./src/migrations/*.ts"],
-    namingStrategy: new SnakeNamingStrategy(),
-    password: env.DB_PASSWORD,
-    port: env.DB_PORT,
-    type: env.DB_TYPE,
-    username: env.DB_USERNAME,
+  cli: {
+    migrationsDir: "./src/migrations",
+  },
+  database: process.env.DB_DATABASE,
+  entities: entities,
+  host: process.env.DB_HOST,
+  migrations: ["./src/migrations/*.ts"],
+  namingStrategy: new SnakeNamingStrategy(),
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+  type: process.env.DB_TYPE,
+  username: process.env.DB_USERNAME,
 };
 ```
 
-database.ts
+#### SQLite
+
+```typescript
+import entities from "./src/entities";
+
+export = {
+  cli: {
+    migrationsDir: "./src/migrations",
+  },
+  database: `database.sqlite`,
+  entities: entities,
+  migrations: ["./src/migrations/*.ts"],
+  type: "sqlite",
+};
+```
+
+### database.ts
+
+#### PostgreSQL
 
 ```typescript
 import {
-    createConnection,
-    getConnection,
-    getConnectionManager,
-    getManager,
+  createConnection,
+  getConnection,
+  getConnectionManager,
+  getManager,
 } from "typeorm";
-import {SnakeNamingStrategy} from "typeorm-naming-strategies";
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import entities from "../entities";
 
 let _connection;
 
 export const createDatabaseConnection = async () => {
-    try {
-        const connection = await createConnection({
-            database: process.env.DB_DATABASE,
-            entities,
-            host: process.env.DB_HOST,
-            migrations: ["../migrations/*.ts"],
-            namingStrategy: new SnakeNamingStrategy(),
-            password: process.env.DB_PASSWORD,
-            port: parseInt(process.env.DB_PORT!),
-            type: process.env.DB_TYPE as any,
-            username: process.env.DB_USERNAME,
-        });
-        if (process.env.DB_SYNCHRONIZE) {
-            await connection.synchronize(false);
-        }
-        _connection = connection;
-    } catch (e) {
-        if (e.name === "AlreadyHasActiveConnectionError") {
-            const existingConnection = getConnectionManager().get("default");
-            _connection = existingConnection;
-        } else {
-            throw e;
-        }
+  try {
+    const connection = await createConnection({
+      database: process.env.DB_DATABASE,
+      entities,
+      host: process.env.DB_HOST,
+      migrations: ["../migrations/*.ts"],
+      namingStrategy: new SnakeNamingStrategy(),
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT!),
+      type: process.env.DB_TYPE as any,
+      username: process.env.DB_USERNAME,
+    });
+    if (process.env.DB_SYNCHRONIZE) {
+      await connection.synchronize(false);
     }
+    _connection = connection;
+  } catch (e) {
+    if (e.name === "AlreadyHasActiveConnectionError") {
+      const existingConnection = getConnectionManager().get("default");
+      _connection = existingConnection;
+    } else {
+      throw e;
+    }
+  }
 };
 
 export const closeDatabaseConnection = async () => {
-    await getConnection().close();
+  await getConnection().close();
 };
 
 export const flushDatabase = async () => {
-    if (process.env.NODE_ENV !== "test") {
-        throw new Error("Illegal NODE_ENV");
-    }
-    const entityNames = getConnection()
-        .entityMetadatas.map(({tableName}) => tableName)
-        .filter((tableName) => tableName !== "migrations");
-    await getManager().query(
-        `TRUNCATE TABLE ${entityNames
-            .map((name) => `"${name}"`)
-            .join(", ")} CASCADE;`
-    );
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("Illegal NODE_ENV");
+  }
+  const entityNames = getConnection()
+    .entityMetadatas.map(({ tableName }) => tableName)
+    .filter((tableName) => tableName !== "migrations");
+  await getManager().query(
+    `TRUNCATE TABLE ${entityNames
+      .map((name) => `"${name}"`)
+      .join(", ")} CASCADE;`
+  );
 };
 ```
 
-generate-migration.sh
+### generate-migration.sh
 
 ```bash
 set -e
@@ -368,7 +393,7 @@ read -r NAME
 NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:generate -n "$NAME"
 ```
 
-run-migration.sh
+### run-migration.sh
 
 ```bash
 set -e
@@ -386,135 +411,134 @@ npm install stripe
 
 ```typescript
 import Stripe from "stripe";
-import {findUserForId, updateUser} from "./database";
+import { findUserForId, updateUser } from "./database";
 
 const STRIPE_SECRET_KEY = "TODO";
 const STRIPE_SUBSCRIPTION_PRICE_ID = "TODO";
 const STRIPE_WEBSITE_URL = "TODO";
 
 export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-    apiVersion: "2020-08-27",
+  apiVersion: "2020-08-27",
 });
 
 export const createCustomer = async (userId: string) => {
-    const user = await findUserForId(userId);
-    if (user) {
-        if (user.stripeCustomerId) {
-            return user.stripeCustomerId;
-        } else {
-            const customer = await stripe.customers.create({
-                email: user.email,
-            });
-            await updateUser(user.id, {
-                stripeCustomerId: customer.id,
-            });
-            return customer.id;
-        }
+  const user = await findUserForId(userId);
+  if (user) {
+    if (user.stripeCustomerId) {
+      return user.stripeCustomerId;
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+      });
+      await updateUser(user.id, {
+        stripeCustomerId: customer.id,
+      });
+      return customer.id;
     }
-    return null;
+  }
+  return null;
 };
 
 export const createCheckoutSession = async (userId: string) => {
-    const user = await findUserForId(userId);
-    if (!user) {
-        throw new Error("Missing user");
-    }
-    let customerId = user.stripeCustomerId;
-    if (!customerId) {
-        customerId = await createCustomer(userId);
-    }
-    if (!customerId) {
-        throw new Error("Error creating Stripe Customer");
-    }
-    const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: "subscription",
-        payment_method_types: ["card"],
-        line_items: [
-            {
-                price: STRIPE_SUBSCRIPTION_PRICE_ID,
-                quantity: 1,
-            },
-        ],
-        success_url: STRIPE_WEBSITE_URL,
-        cancel_url: STRIPE_WEBSITE_URL,
-    });
-    return session;
+  const user = await findUserForId(userId);
+  if (!user) {
+    throw new Error("Missing user");
+  }
+  let customerId = user.stripeCustomerId;
+  if (!customerId) {
+    customerId = await createCustomer(userId);
+  }
+  if (!customerId) {
+    throw new Error("Error creating Stripe Customer");
+  }
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: STRIPE_SUBSCRIPTION_PRICE_ID,
+        quantity: 1,
+      },
+    ],
+    success_url: STRIPE_WEBSITE_URL,
+    cancel_url: STRIPE_WEBSITE_URL,
+  });
+  return session;
 };
 
 export const createBillingPortalSession = async (userId: string) => {
-    const user = await findUserForId(userId);
-    if (!user) {
-        throw new Error("Missing user");
-    }
-    if (!user.stripeCustomerId) {
-        throw new Error("Missing Stripe Customer");
-    }
-    const session = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: STRIPE_WEBSITE_URL,
-    });
-    return session;
+  const user = await findUserForId(userId);
+  if (!user) {
+    throw new Error("Missing user");
+  }
+  if (!user.stripeCustomerId) {
+    throw new Error("Missing Stripe Customer");
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: user.stripeCustomerId,
+    return_url: STRIPE_WEBSITE_URL,
+  });
+  return session;
 };
 ```
 
 ```typescript
 router
-    .get("/checkout-session", async (ctx) => {
-        const checkoutSession = await createCheckoutSession("user-id");
-        ctx.body = checkoutSession.id;
-    })
-    .get("/billing-portal", async (ctx) => {
-        const billingPortalSession = await createBillingPortalSession("user-id");
-        ctx.redirect(billingPortalSession.url);
-    })
+  .get("/checkout-session", async (ctx) => {
+    const checkoutSession = await createCheckoutSession("user-id");
+    ctx.body = checkoutSession.id;
+  })
+  .get("/billing-portal", async (ctx) => {
+    const billingPortalSession = await createBillingPortalSession("user-id");
+    ctx.redirect(billingPortalSession.url);
+  });
 ```
 
 ```typescript
-router
-    .post("/webhooks/stripe", async (ctx) => {
-        const event = stripe.webhooks.constructEvent(
-            ctx.request.rawBody,
-            ctx.request.headers["stripe-signature"],
-            "STRIPE_SIGNING_SECRET" // TODO
-        );
+router.post("/webhooks/stripe", async (ctx) => {
+  const event = stripe.webhooks.constructEvent(
+    ctx.request.rawBody,
+    ctx.request.headers["stripe-signature"],
+    "STRIPE_SIGNING_SECRET" // TODO
+  );
 
-        console.log(`Event type: ${event.type}`);
+  console.log(`Event type: ${event.type}`);
 
-        if (event.type === "checkout.session.completed") {
-            console.log("Stripe: checkout session completed");
-            const session = event.data.object as Stripe.Checkout.Session;
-            const customerId = session.customer;
-            if (!customerId) {
-                throw new Error(`Missing customer ${customerId}`);
-            }
-            const user = await findUserForStripeCustomerId(customerId as string);
-            if (!user) {
-                throw new Error("Missing user");
-            }
-            await updateUser(user.id, {
-                subscribedAt: new Date(),
-            });
-        }
+  if (event.type === "checkout.session.completed") {
+    console.log("Stripe: checkout session completed");
+    const session = event.data.object as Stripe.Checkout.Session;
+    const customerId = session.customer;
+    if (!customerId) {
+      throw new Error(`Missing customer ${customerId}`);
+    }
+    const user = await findUserForStripeCustomerId(customerId as string);
+    if (!user) {
+      throw new Error("Missing user");
+    }
+    await updateUser(user.id, {
+      subscribedAt: new Date(),
+    });
+  }
 
-        if (event.type === "customer.subscription.deleted") {
-            console.log("Stripe: customer subscription deleted");
-            const subscription = event.data.object as Stripe.Subscription;
-            const customerId = subscription.customer;
-            if (!customerId) {
-                throw new Error(`Missing customer ${customerId}`);
-            }
-            const user = await findUserForStripeCustomerId(customerId as string);
-            if (!user) {
-                throw new Error("Missing user");
-            }
-            await updateUser(user.id, {
-                unsubscribedAt: new Date(),
-            });
-        }
+  if (event.type === "customer.subscription.deleted") {
+    console.log("Stripe: customer subscription deleted");
+    const subscription = event.data.object as Stripe.Subscription;
+    const customerId = subscription.customer;
+    if (!customerId) {
+      throw new Error(`Missing customer ${customerId}`);
+    }
+    const user = await findUserForStripeCustomerId(customerId as string);
+    if (!user) {
+      throw new Error("Missing user");
+    }
+    await updateUser(user.id, {
+      unsubscribedAt: new Date(),
+    });
+  }
 
-        ctx.status = 200;
-    })
+  ctx.status = 200;
+});
 ```
 
 ## Jest
@@ -563,10 +587,7 @@ tsconfig.json
     "declaration": true,
     "esModuleInterop": true,
     "importHelpers": true,
-    "lib": [
-      "dom",
-      "ES2015"
-    ],
+    "lib": ["dom", "ES2015"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -580,9 +601,7 @@ tsconfig.json
     "strict": true,
     "target": "ES5"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
 ```
 
@@ -590,21 +609,21 @@ webpack.config.js
 
 ```javascript
 module.exports = {
-    devtool: "inline-source-map",
-    output: {
-        filename: "index.js",
-        library: "LibraryName",
-        libraryTarget: "umd",
-        libraryExport: "default",
-        umdNamedDefine: true,
-        globalObject: "typeof self !== 'undefined' ? self : this",
-    },
-    resolve: {
-        extensions: [".ts", ".js"],
-    },
-    module: {
-        rules: [{test: /\.ts?$/, loader: "ts-loader", exclude: /node_modules/}],
-    },
+  devtool: "inline-source-map",
+  output: {
+    filename: "index.js",
+    library: "LibraryName",
+    libraryTarget: "umd",
+    libraryExport: "default",
+    umdNamedDefine: true,
+    globalObject: "typeof self !== 'undefined' ? self : this",
+  },
+  resolve: {
+    extensions: [".ts", ".js"],
+  },
+  module: {
+    rules: [{ test: /\.ts?$/, loader: "ts-loader", exclude: /node_modules/ }],
+  },
 };
 ```
 
@@ -615,10 +634,7 @@ package.json
   "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "engines": {
     "node": ">=10"
   },
