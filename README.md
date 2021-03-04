@@ -466,6 +466,8 @@ import { SomeResolver } from "./resolvers/SomeResolver";
 export default [SomeResolver] as NonEmptyArray<Function>;
 ```
 
+#### Schema generation
+
 buildAndEmitSchema.ts
 
 ```typescript
@@ -502,6 +504,15 @@ buildSchema({
 
 ```bash
 NODE_ENV="production" node_modules/.bin/ts-node src/gql/buildAndEmitSchema.ts
+```
+
+.graphqlconfig
+
+```json
+{
+  "name": "schema",
+  "schemaPath": "schema.graphql"
+}
 ```
 
 ### Depth limit
