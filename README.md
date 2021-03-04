@@ -466,6 +466,44 @@ import { SomeResolver } from "./resolvers/SomeResolver";
 export default [SomeResolver] as NonEmptyArray<Function>;
 ```
 
+buildAndEmitSchema.ts
+
+```typescript
+import "reflect-metadata";
+
+import path from "path";
+
+import {
+  buildSchema,
+  emitSchemaDefinitionFile,
+  registerEnumType,
+} from "type-graphql";
+
+import enums from "./enums";
+import resolvers from "./resolvers";
+
+enums.forEach(({ clazz, meta }) => {
+  registerEnumType(clazz, meta);
+});
+
+buildSchema({
+  resolvers,
+}).then((schema) => {
+  emitSchemaDefinitionFile(
+    path.resolve(__dirname, "../../schema.graphql"),
+    schema
+  )
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.log(error);
+    });
+});
+```
+
+```bash
+NODE_ENV="production" node_modules/.bin/ts-node src/gql/buildAndEmitSchema.ts
+```
+
 ### Depth limit
 
 ```bash
