@@ -7,6 +7,36 @@ mkdir scripts
 mkdir src
 ```
 
+## execute.sh
+
+```
+#!/bin/bash
+
+set -e
+
+if [ $# -eq 0 ]; then
+  echo Enter a command to execute:
+  read -r COMMAND
+else
+  COMMAND=$1
+fi
+
+SECONDS=0
+
+echo "execute started"
+
+DIRECTORIES=("." "backend" "dashboard")
+
+for i in "${DIRECTORIES[@]}"; do
+  echo "Executing '$COMMAND' in $i"
+  (cd "$i" && eval "$COMMAND")
+done
+
+duration=$SECONDS
+
+echo "execute finished ($duration seconds)"
+```
+
 ## TypeScript
 
 ### Setup
