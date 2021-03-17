@@ -565,6 +565,14 @@ const apolloServer = new ApolloServer({
 });
 ```
 
+## IoC
+
+### typescript-ioc
+
+```bash
+npm install typescript-ioc
+```
+
 ## Stripe
 
 ### Subscription boilerplate
@@ -711,10 +719,10 @@ router.post("/webhooks/stripe", async (ctx) => {
 npm install --save-dev @types/jest jest ts-jest
 ```
 
-jest.config.js
+jest.config.ts
 
 ```javascript
-module.exports = {
+export default {
   globals: {
     "ts-jest": {
       isolatedModules: true,
