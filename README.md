@@ -476,15 +476,14 @@ import { buildTypeDefsAndResolvers, registerEnumType } from "type-graphql";
 import enums from "../gql/enums";
 import resolvers from "../gql/resolvers";
 
-async function buildTypeDefsAndResolvers() {
+const typeDefsAndResolvers = await (async () => {
   enums.forEach(({ clazz, meta }) => {
     registerEnumType(clazz, meta);
   });
-  const result = await buildTypeDefsAndResolvers({
+  return await buildTypeDefsAndResolvers({
     resolvers,
   });
-  return result;
-}
+})();
 ```
 
 resolvers.ts
