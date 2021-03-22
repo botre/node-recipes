@@ -794,6 +794,53 @@ jest.config.ts
 }
 ```
 
+### initializeBackendBeforeAll
+
+```typescript
+import { Container } from "typescript-ioc";
+import http from "http";
+import supertest from "supertest";
+import { v4 as uuid } from "uuid";
+import DatabaseService from "../services/DatabaseService";
+import KoaServerService from "../services/KoaServerService";
+import ApolloServerService from "../services/ApolloServerService";
+
+export const initializeBackendBeforeAll = ({
+  resetDatabaseBeforeEach: resetDatabaseBeforeEach = true,
+} = {}) => {
+  const $database = Container.get(DatabaseService);
+  const $koaServer = Container.get(KoaServerService);
+  const $apolloServer = Container.get(ApolloServerService);
+
+  let request: supertest.SuperTest<supertest.Test>;
+
+  beforeAll(async () => {
+    const database = `db${uuid().replace(/-/g, "").slice(0, 32)}`;
+    const connection = await $database.createConnection();
+    await connection.query(`CREATE DATABASE ${database}`);
+    await $database.closeConnection();
+    await $database.createConnection({
+      database,
+    });
+    const server = await $koaServer.create();
+    await $apolloServer.create(server);
+    request = supertest(http.createServer(server.callback()));
+  });
+
+  afterAll(async () => {
+    await $database.closeConnection();
+  });
+
+  if (resetDatabaseBeforeEach) {
+    beforeEach(async () => {
+      await $database.flushDatabase();
+    });
+  }
+
+  return () => ({ request });
+};
+```
+
 ## NPM browser library (Webpack)
 
 ```bash
