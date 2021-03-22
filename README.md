@@ -128,7 +128,10 @@ application.use(async (ctx, next) => {
 
 const router = new Router();
 
-router.get("/", (ctx) => (ctx.body = "🌊"));
+router
+  .get("/", (ctx) => (ctx.body = "🌊"))
+  .get("/env", (ctx) => (ctx.body = process.env.NODE_ENV))
+  .get("/ping", (ctx) => (ctx.body = "OK"));
 
 application.use(router.routes()).use(router.allowedMethods());
 ```
