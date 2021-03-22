@@ -369,64 +369,71 @@ export = {
 };
 ```
 
-### database.ts
+### DatabaseService.ts
 
 ```typescript
+import { Singleton } from "typescript-ioc";
 import {
+  Connection,
   createConnection,
   getConnection,
   getConnectionManager,
   getManager,
 } from "typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-import entities from "../entities";
+import entities from "../database/entities";
 
-let _connection;
+@Singleton
+export default class DatabaseService {
+  private _connection: Connection;
 
-export const createDatabaseConnection = async () => {
-  try {
-    const connection = await createConnection({
-      database: process.env.DB_DATABASE,
-      entities,
-      host: process.env.DB_HOST,
-      migrations: ["../migrations/*.ts"],
-      namingStrategy: new SnakeNamingStrategy(),
-      password: process.env.DB_PASSWORD,
-      port: parseInt(process.env.DB_PORT!),
-      type: process.env.DB_TYPE as any,
-      username: process.env.DB_USERNAME,
-    });
-    if (process.env.DB_SYNCHRONIZE) {
-      await connection.synchronize(false);
+  async createConnection(overrides?: { database?: string }) {
+    try {
+      const options = {
+        database: overrides?.database ?? process.env.DB_DATABASE,
+        entities,
+        host: process.env.DB_HOST,
+        migrations: ["../migrations/*.ts"],
+        namingStrategy: new SnakeNamingStrategy(),
+        password: process.env.DB_PASSWORD,
+        port: parseInt(process.env.DB_PORT!),
+        type: process.env.DB_TYPE as any,
+        username: process.env.DB_USERNAME,
+      };
+      const connection = await createConnection(options);
+      if (process.env.DB_SYNCHRONIZE === "true") {
+        await connection.synchronize(process.env.DB_DROP === "true");
+      }
+      this._connection = connection;
+    } catch (e) {
+      if (e.name === "AlreadyHasActiveConnectionError") {
+        const existingConnection = getConnectionManager().get("default");
+        this._connection = existingConnection;
+      } else {
+        throw e;
+      }
     }
-    _connection = connection;
-  } catch (e) {
-    if (e.name === "AlreadyHasActiveConnectionError") {
-      const existingConnection = getConnectionManager().get("default");
-      _connection = existingConnection;
-    } else {
-      throw e;
+    return this._connection;
+  }
+
+  async closeConnection() {
+    await getConnection().close();
+  }
+
+  async flushDatabase() {
+    if (process.env.NODE_ENV !== "test") {
+      throw new Error("Illegal NODE_ENV");
     }
+    const entityNames = getConnection()
+      .entityMetadatas.map(({ tableName }) => tableName)
+      .filter((tableName) => tableName !== "migrations");
+    await getManager().query(
+      `TRUNCATE TABLE ${entityNames
+        .map((name) => `"${name}"`)
+        .join(", ")} CASCADE;`
+    );
   }
-};
-
-export const closeDatabaseConnection = async () => {
-  await getConnection().close();
-};
-
-export const flushDatabase = async () => {
-  if (process.env.NODE_ENV !== "test") {
-    throw new Error("Illegal NODE_ENV");
-  }
-  const entityNames = getConnection()
-    .entityMetadatas.map(({ tableName }) => tableName)
-    .filter((tableName) => tableName !== "migrations");
-  await getManager().query(
-    `TRUNCATE TABLE ${entityNames
-      .map((name) => `"${name}"`)
-      .join(", ")} CASCADE;`
-  );
-};
+}
 ```
 
 ### generate-migration.sh
