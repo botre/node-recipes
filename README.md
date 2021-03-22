@@ -168,7 +168,11 @@ export const handler = async (
 ### Format all
 
 ```bash
-prettier --write . --ignore-path .gitignore
+#!/bin/bash
+
+set -e
+
+node_modules/.bin/prettier --write . --ignore-path .gitignore
 ```
 
 ### Quick setup
@@ -297,6 +301,8 @@ services:
 dev.sh
 
 ```bash
+#!/bin/bash
+
 docker-compose down
 docker-compose up -d
 ```
@@ -426,6 +432,8 @@ export const flushDatabase = async () => {
 ### generate-migration.sh
 
 ```bash
+#!/bin/bash
+
 set -e
 
 echo You are about to generate a migration from schema changes
@@ -437,6 +445,8 @@ NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js 
 ### run-migration.sh
 
 ```bash
+#!/bin/bash
+
 set -e
 
 NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:run
@@ -532,6 +542,8 @@ buildSchema({
 ```
 
 ```bash
+#!/bin/bash
+
 NODE_ENV="production" node_modules/.bin/ts-node src/gql/buildAndEmitSchema.ts
 ```
 
