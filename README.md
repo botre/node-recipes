@@ -742,6 +742,10 @@ router.post("/webhooks/stripe", async (ctx) => {
 ## Jest
 
 ```bash
+mkdir __tests__
+```
+
+```bash
 npm install --save-dev @types/jest jest ts-jest
 ```
 
@@ -767,8 +771,27 @@ tsconfig.json
 }
 ```
 
-```bash
-mkdir __tests__
+### Global setup
+
+globalSetup.ts
+
+```typescript
+const globalSetup = () => {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("Illegal NODE_ENV");
+  }
+  require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+};
+
+export default globalSetup;
+```
+
+jest.config.ts
+
+```typescript
+{
+  globalSetup: "./src/testing/globalSetup.ts";
+}
 ```
 
 ## NPM browser library (Webpack)
