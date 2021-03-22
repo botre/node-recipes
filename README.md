@@ -436,9 +436,13 @@ export const flushDatabase = async () => {
 
 set -e
 
-echo You are about to generate a migration from schema changes
-echo Pick a name:
-read -r NAME
+if [ $# -eq 0 ]; then
+  echo Enter a name for your migration:
+  read -r NAME
+else
+  NAME=$1
+fi
+
 NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:generate -n "$NAME"
 ```
 
