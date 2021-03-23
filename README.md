@@ -501,9 +501,11 @@ import enums from "../gql/enums";
 import resolvers from "../gql/resolvers";
 
 const typeDefsAndResolvers = await (async () => {
-  enums.forEach(({ clazz, meta }) => {
-    registerEnumType(clazz, meta);
-  });
+  Object.entries(enums).forEach(([name, object]) =>
+    registerEnumType(object, {
+      name,
+    })
+  );
   return await buildTypeDefsAndResolvers({
     resolvers,
   });
@@ -537,9 +539,11 @@ import {
 import enums from "./enums";
 import resolvers from "./resolvers";
 
-enums.forEach(({ clazz, meta }) => {
-  registerEnumType(clazz, meta);
-});
+Object.entries(enums).forEach(([name, object]) =>
+  registerEnumType(object, {
+    name,
+  })
+);
 
 buildSchema({
   resolvers,
