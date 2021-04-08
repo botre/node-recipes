@@ -196,6 +196,77 @@ package.json
 }
 ```
 
+## ESLint
+
+### Setup
+
+```bash
+npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-plugin-jsx-a11y eslint-plugin-no-only-tests eslint-plugin-react typescript
+```
+
+.eslintrc.js
+
+```javascript
+module.exports = {
+  env: {
+    browser: true,
+    es2020: true,
+    node: true,
+  },
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
+    },
+    ecmaVersion: 11,
+    sourceType: "module",
+  },
+  plugins: ["@typescript-eslint", "jsx-a11y", "no-only-tests", "react"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jsx-a11y/recommended",
+    "plugin:react/recommended",
+  ],
+  rules: {
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/prefer-ts-expect-error": "error",
+    "jsx-a11y/anchor-is-valid": "off",
+    "no-console": "warn",
+    "no-only-tests/no-only-tests": [
+      "error",
+      {
+        block: ["assert", "context", "it", "test"],
+        focus: ["focus", "only"],
+      },
+    ],
+    "react/display-name": "off",
+    "react/no-unescaped-entities": "off",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+  },
+  settings: {
+    react: {
+      version: "17.0.0",
+    },
+  },
+};
+```
+
+lint.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+node_modules/.bin/eslint --fix --ignore-path .gitignore "**/*.+(js|jsx|ts|tsx)"
+```
+
 ## Nodemon
 
 ### Setup
