@@ -53,6 +53,7 @@ tsconfig.json
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "jsx": "react",
     "lib": ["es2019", "esnext.asynciterable"],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -292,7 +293,7 @@ nodemon.json
 ```json
 {
   "watch": ["src"],
-  "ext": "js,json,ts",
+  "ext": "js,json,jsx,ts,tsx",
   "exec": "ts-node --transpile-only -r ./src/application.ts"
 }
 ```
@@ -341,6 +342,16 @@ set -e
 node_modules/.bin/senv decrypt .env.development.encrypted -p "$DOTENV_SECRET" > .env.development
 node_modules/.bin/senv decrypt .env.production.encrypted -p "$DOTENV_SECRET" > .env.production
 node_modules/.bin/senv decrypt .env.test.encrypted -p "$DOTENV_SECRET" > .env.test
+```
+
+## React
+
+```bash
+npm install react react-dom
+```
+
+```bash
+npm install --save-dev @types/react @types/react-dom
 ```
 
 ## Database
