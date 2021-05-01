@@ -420,16 +420,16 @@ npm install sqlite3
 require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-import entities from "./src/entities";
+import entities from "./src/database/entities";
 
 export = {
   cli: {
-    migrationsDir: "./src/migrations",
+    migrationsDir: "./src/database/migrations",
   },
   database: process.env.DB_DATABASE,
   entities: entities,
   host: process.env.DB_HOST,
-  migrations: ["./src/migrations/*.ts"],
+  migrations: ["./src/database/migrations/*.ts"],
   namingStrategy: new SnakeNamingStrategy(),
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
@@ -441,15 +441,15 @@ export = {
 #### SQLite
 
 ```typescript
-import entities from "./src/entities";
+import entities from "./src/database/entities";
 
 export = {
   cli: {
-    migrationsDir: "./src/migrations",
+    migrationsDir: "./src/database/migrations",
   },
   database: `database.sqlite`,
   entities: entities,
-  migrations: ["./src/migrations/*.ts"],
+  migrations: ["./src/database/migrations/*.ts"],
   type: "sqlite",
 };
 ```
