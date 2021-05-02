@@ -927,6 +927,87 @@ export const initializeBackendBeforeAll = ({
 };
 ```
 
+### Webpack for AWS Lambda
+
+```bash
+npm install --save-dev @types/webpack ts-loader webpack webpack-cli
+```
+
+build.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+export TS_NODE_PROJECT="webpack.tsconfig.json"
+export NODE_ENV="production"
+
+node_modules/.bin/webpack
+```
+
+webpack.config.ts
+
+```typescript
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+import * as path from "path";
+import * as webpack from "webpack";
+
+require("dotenv").config({
+  path: path.join(__dirname, `.env.${process.env.NODE_ENV}`),
+});
+
+const config: webpack.Configuration = {
+  entry: {
+    api: path.join(__dirname, "src", "serverless"),
+  },
+  output: {
+    path: `${process.cwd()}/dist`,
+    filename: "[name].js",
+    libraryTarget: "umd",
+  },
+  target: "node",
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "ts-loader",
+        },
+      },
+    ],
+  },
+  plugins: [
+    new webpack.EnvironmentPlugin(Object.keys(process.env)),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^pg-native$/,
+    }),
+  ],
+  resolve: {
+    extensions: [".js", ".mjs", ".ts"],
+  },
+  optimization: { minimize: false },
+  externals: [{ "aws-sdk": "commonjs aws-sdk" }],
+  devtool: "source-map",
+};
+
+export default config;
+```
+
+webpack.tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "es5"
+  }
+}
+```
+
 ## NPM browser library (Webpack)
 
 ```bash
