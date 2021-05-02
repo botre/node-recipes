@@ -971,7 +971,13 @@ const config: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.m?js/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
+        test: /\.tsx?$/,
         exclude: /node_modules/,
         use: {
           loader: "ts-loader",
@@ -986,7 +992,7 @@ const config: webpack.Configuration = {
     }),
   ],
   resolve: {
-    extensions: [".js", ".mjs", ".ts"],
+    extensions: [".tsx", ".ts", ".mjs", ".js"],
   },
   optimization: { minimize: false },
   externals: [{ "aws-sdk": "commonjs aws-sdk" }],
