@@ -293,7 +293,7 @@ nodemon.json
 ```json
 {
   "watch": ["src"],
-  "ext": "js,json,jsx,ts,tsx",
+  "ext": "js,jsx,ts,tsx,json",
   "exec": "ts-node --transpile-only -r ./src/application.ts"
 }
 ```
@@ -991,9 +991,9 @@ const config: webpack.Configuration = {
       resourceRegExp: /^pg-native$/,
     }),
   ],
-  resolve: {
-    extensions: [".tsx", ".ts", ".mjs", ".js"],
-  },
+resolve: {
+    extensions: [".ts", ".tsx", ".mjs", ".js", ".jsx"],
+},
   optimization: { minimize: false },
   externals: [{ "aws-sdk": "commonjs aws-sdk" }],
   devtool: "source-map",
