@@ -1,12 +1,5 @@
 # Node recipes
 
-## Directories
-
-```bash
-mkdir scripts
-mkdir src
-```
-
 ## execute.sh
 
 ```
