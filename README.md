@@ -43,6 +43,7 @@ tsconfig.json
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "outDir": "dist",
     "noImplicitThis": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
