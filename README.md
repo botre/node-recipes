@@ -991,9 +991,9 @@ const config: webpack.Configuration = {
       resourceRegExp: /^pg-native$/,
     }),
   ],
-resolve: {
+  resolve: {
     extensions: [".ts", ".tsx", ".mjs", ".js", ".jsx"],
-},
+  },
   optimization: { minimize: false },
   externals: [{ "aws-sdk": "commonjs aws-sdk" }],
   devtool: "source-map",
