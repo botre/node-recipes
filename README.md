@@ -14,27 +14,19 @@ mkdir src
 
 set -e
 
+DIRECTORIES=("." "backend" "frontend/dashboard" "frontend/landing")
+
 if [ $# -eq 0 ]; then
   echo Enter a command to execute:
   read -r COMMAND
 else
-  COMMAND=$1
+  COMMAND=$*
 fi
-
-SECONDS=0
-
-echo "execute started"
-
-DIRECTORIES=("." "backend" "dashboard")
 
 for i in "${DIRECTORIES[@]}"; do
   echo "Executing '$COMMAND' in $i"
   (cd "$i" && eval "$COMMAND")
 done
-
-duration=$SECONDS
-
-echo "execute finished ($duration seconds)"
 ```
 
 ## TypeScript
