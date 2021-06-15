@@ -353,7 +353,7 @@ npm install typeorm
 #### PostgreSQL
 
 ```bash
-npm install typeorm-naming-strategies
+npm install pg typeorm-naming-strategies
 ```
 
 #### SQLite
@@ -485,7 +485,9 @@ else
   NAME=$1
 fi
 
-NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:generate -n "$NAME"
+export NODE_ENV="production"
+
+./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:generate -n "$NAME"
 ```
 
 ### run-migration.sh
@@ -495,7 +497,9 @@ NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js 
 
 set -e
 
-NODE_ENV="production" ./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:run
+export NODE_ENV="production"
+
+./node_modules/.bin/ts-node ./node_modules/typeorm/cli.js migration:run
 ```
 
 ## GraphQL
