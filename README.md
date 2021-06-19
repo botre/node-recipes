@@ -688,7 +688,7 @@ type Payload = {
   message: string;
 };
 
-const encoded = await $jwt.encode<Payload>({
+const encoded = $jwt.encode<Payload>({
   payload: {
     message: "Hello, World",
   },
@@ -696,7 +696,7 @@ const encoded = await $jwt.encode<Payload>({
   secret: "🐍",
 });
 
-const decoded = await $jwt.decode<Payload>({
+const decoded = $jwt.decode<Payload>({
   encoded,
   secret: "🐍",
 });
