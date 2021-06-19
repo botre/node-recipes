@@ -639,6 +639,69 @@ const apolloServer = new ApolloServer({
 npm install typescript-ioc
 ```
 
+## JWT
+
+```bash
+npm install jsonwebtoken
+```
+
+```bash
+npm install --save-dev @types/jsonwebtoken
+```
+
+```typescript
+import { Singleton } from "typescript-ioc";
+import jwt from "jsonwebtoken";
+
+type Payload = string | Buffer | object;
+
+interface EncodeArguments<P> {
+  payload: P;
+  secret: string;
+  expiresIn: string;
+}
+
+interface DecodeArguments {
+  encoded: string;
+  secret: string;
+}
+
+@Singleton
+export default class JwtService {
+  encode<P extends Payload>({
+    payload,
+    secret,
+    expiresIn,
+  }: EncodeArguments<P>): string {
+    return jwt.sign(payload, secret, {
+      expiresIn,
+    });
+  }
+  decode<P extends Payload>({ encoded, secret }: DecodeArguments): P {
+    return jwt.verify(encoded, secret) as P;
+  }
+}
+```
+
+```typescript
+type Payload = {
+  message: string;
+};
+
+const encoded = await $jwt.encode<Payload>({
+  payload: {
+    message: "Hello, World",
+  },
+  expiresIn: "1h",
+  secret: "🐍",
+});
+
+const decoded = await $jwt.decode<Payload>({
+  encoded,
+  secret: "🐍",
+});
+```
+
 ## Stripe
 
 ### Subscription boilerplate
